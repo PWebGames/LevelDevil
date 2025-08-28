@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+	<link rel="manifest" href="/leveldevil/manifest.json">
+<meta name="theme-color" content="#000000">
+
+<link rel="apple-touch-icon" href="/leveldevil/assets/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Level Devil">
+
 	
 	<meta charset="utf-8">
 	
@@ -43,6 +52,16 @@
 	<script>
 		lime.embed ("Level Devil", "openfl-content", 854, 480, { parameters: {} });
 	</script>
+
+	<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/leveldevil/sw.js', { scope: '/leveldevil/' })
+      .catch(err => console.error('SW registration failed', err));
+  });
+}
+</script>
+
 	
 </body>
 </html>
