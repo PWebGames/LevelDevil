@@ -1,6 +1,7 @@
-const CACHE_NAME = "leveldevil-v1";
+const CACHE_NAME = "leveldevil-hybrid-v1";
 
-const ASSETS = [
+// Precache all known core files (from your old list)
+const CORE_ASSETS = [
   "/leveldevil/",
   "/leveldevil/index.html",
   "/leveldevil/Level Devil.js",
@@ -38,8 +39,9 @@ const ASSETS = [
 
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(CORE_ASSETS))
   );
+  self.skipWaiting();
 });
 
 self.addEventListener("activate", event => {
@@ -48,10 +50,27 @@ self.addEventListener("activate", event => {
       Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     )
   );
+  self.clients.claim();
 });
 
 self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then(resp => resp || fetch(event.request))
+    caches.match(event.request).then(cachedResponse => {
+      if (cachedResponse) {
+        return cachedResponse; // serve cached
+      }
+
+      return fetch(event.request).then(networkResponse => {
+        // Only cache GET requests
+        if (event.request.method === "GET" && networkResponse.ok) {
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, networkResponse.clone());
+          });
+        }
+        return networkResponse;
+      }).catch(() => {
+        // Optional: add a fallback offline response here
+      });
+    })
   );
 });
